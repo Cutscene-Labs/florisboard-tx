@@ -40,8 +40,9 @@ import java.net.URL
 /**
  * Share target for images ("Ask SovereignBoard" in the share sheet): take a screenshot - say of an
  * Instagram video to repost - tap Share, pick it. A small window asks "What do you want to do with this?":
- * type or dictate an answer, or tap a quick pick (something smart to say, a witty caption, a reply,
- * explain it, pull out the text). The screenshot (downscaled, JPEG, memory only) and the request go to
+ * type or dictate an answer, or tap one of the suggestions. While the box is already open, the server
+ * looks at the picture (POST /v1/smart with suggest) and offers a one-line read of what it is plus
+ * prompts made for that picture; if that fails, fixed quick picks show instead. The screenshot (downscaled, JPEG, memory only) and the request go to
  * the user's own server (POST /v1/smart), which asks Claude. Options come back as separate lines (tap
  * one to copy it); a single answer gets a Copy button. Ask again goes back to the question.
  * Developer feature (the server enforces it, like the screenshot fact check).
@@ -50,6 +51,11 @@ class SmartTakeActivity : Activity() {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private lateinit var body: LinearLayout
     private var image: ByteArray? = null
+    /** Prompts made for this picture: null until they arrive; [suggestFailed] = use [QUICK_PICKS]. */
+    private var suggestions: Pair<String, List<String>>? = null
+    private var suggestStarted = false
+    private var suggestFailed = false
+    private var picksBox: LinearLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,8 +99,26 @@ class SmartTakeActivity : Activity() {
             }
         }
         body.addView(input, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
-        for (pick in QUICK_PICKS) body.addView(chip(pick) { ask(settings, pick) },
-            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        picksBox = box
+        body.addView(box, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        fillPicks(settings)
+        if (!suggestStarted) {
+            suggestStarted = true
+            scope.launch {
+                val got = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val o = request(settings, image ?: throw Failed("No picture"), "", suggest = true)
+                        val arr = o.optJSONArray("prompts")
+                        val prompts = (0 until (arr?.length() ?: 0)).mapNotNull { arr!!.optString(it).trim().takeIf { t -> t.isNotEmpty() } }
+                        if (prompts.isEmpty()) throw Failed("No suggestions")
+                        o.optString("about").trim() to prompts
+                    }.getOrNull()
+                }
+                if (got == null) suggestFailed = true else suggestions = got
+                if (picksBox === box) fillPicks(settings)
+            }
+        }
         body.addView(LinearLayout(this).apply {
             gravity = Gravity.END
             setPadding(0, dp(10), 0, 0)
@@ -106,7 +130,28 @@ class SmartTakeActivity : Activity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     }
 
+    private fun fillPicks(settings: DictationSettings) {
+        val box = picksBox ?: return
+        box.removeAllViews()
+        val lp = { LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) } }
+        val found = suggestions
+        when {
+            found != null -> {
+                if (found.first.isNotEmpty()) box.addView(text(found.first, 14f).apply { alpha = 0.75f; setPadding(0, dp(6), 0, 0) })
+                for (pick in found.second) box.addView(chip(pick) { ask(settings, pick) }, lp())
+            }
+            suggestFailed -> for (pick in QUICK_PICKS) box.addView(chip(pick) { ask(settings, pick) }, lp())
+            else -> box.addView(LinearLayout(this).apply {
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, dp(12), 0, dp(4))
+                addView(ProgressBar(this@SmartTakeActivity).apply { isIndeterminate = true }, LinearLayout.LayoutParams(dp(20), dp(20)))
+                addView(text("Looking at your picture for ideas…", 14f).apply { alpha = 0.75f; setPadding(dp(10), 0, 0, 0) })
+            })
+        }
+    }
+
     private fun ask(settings: DictationSettings, request: String) {
+        picksBox = null
         val wanted = request.ifBlank { QUICK_PICKS[0] }
         currentFocus?.let { (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(it.windowToken, 0) }
         body.removeAllViews()
@@ -117,7 +162,7 @@ class SmartTakeActivity : Activity() {
         })
         scope.launch {
             val result = withContext(Dispatchers.IO) {
-                try { Result.success(request(settings, image ?: return@withContext Result.failure(Failed("No picture")), wanted)) }
+                try { Result.success(answerOf(request(settings, image ?: return@withContext Result.failure(Failed("No picture")), wanted))) }
                 catch (e: Failed) { Result.failure(e) }
                 catch (e: IOException) { Result.failure(Failed("Couldn't reach the server. Check your connection and try again.")) }
                 catch (e: Exception) { Result.failure(Failed("That didn't work. Try again.")) }
@@ -172,9 +217,9 @@ class SmartTakeActivity : Activity() {
 
     private class Failed(message: String) : Exception(message)
 
-    private fun request(settings: DictationSettings, jpeg: ByteArray, wanted: String): Answer {
+    private fun request(settings: DictationSettings, jpeg: ByteArray, wanted: String, suggest: Boolean = false): JSONObject {
         val bytes = JSONObject().put("image", Base64.encodeToString(jpeg, Base64.NO_WRAP)).put("media_type", "image/jpeg")
-            .put("request", wanted).toString().toByteArray()
+            .put("request", wanted).put("suggest", suggest).toString().toByteArray()
         val conn = (URL(settings.serverUrl.trimEnd('/') + "/v1/smart").openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
             connectTimeout = 8_000
@@ -204,13 +249,16 @@ class SmartTakeActivity : Activity() {
                 })
             }
             SovereignToken.onAccepted(this)
-            val o = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
-            val arr = o.optJSONArray("lines")
-            val lines = (0 until (arr?.length() ?: 0)).mapNotNull { arr!!.optString(it).trim().takeIf { t -> t.isNotEmpty() } }
-            return Answer(o.optString("answer").trim(), lines)
+            return JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
         } finally {
             conn.disconnect()
         }
+    }
+
+    private fun answerOf(o: JSONObject): Answer {
+        val arr = o.optJSONArray("lines")
+        val lines = (0 until (arr?.length() ?: 0)).mapNotNull { arr!!.optString(it).trim().takeIf { t -> t.isNotEmpty() } }
+        return Answer(o.optString("answer").trim(), lines)
     }
 
     @Suppress("DEPRECATION")
@@ -234,7 +282,7 @@ class SmartTakeActivity : Activity() {
     }
 
     companion object {
-        /** The first one is also what an empty request means. */
+        /** Shown if the picture-made suggestions fail. The first one is also what an empty request means. */
         val QUICK_PICKS = listOf(
             "What smart thing can I say about this?",
             "Write a witty caption to repost it",
