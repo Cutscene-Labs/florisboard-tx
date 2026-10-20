@@ -99,9 +99,9 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
             android:theme="@style/TransparentActivityTheme" android:excludeFromRecents="true" android:noHistory="true"
             android:windowSoftInputMode="adjustResize|stateAlwaysVisible" android:configChanges="orientation|screenSize"/>
 
-        <!-- SovereignBoard: share a screenshot -> three witty lines (developer feature) -->
+        <!-- SovereignBoard: share a screenshot, say what to do with it (developer feature) -->
         <activity android:name="helium314.keyboard.tx.SmartTakeActivity" android:exported="true"
-            android:label="Smart take" android:icon="@mipmap/ic_launcher"
+            android:label="Ask SovereignBoard" android:icon="@mipmap/ic_launcher"
             android:theme="@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar"
             android:excludeFromRecents="true" android:noHistory="true" android:taskAffinity="">
             <intent-filter>
