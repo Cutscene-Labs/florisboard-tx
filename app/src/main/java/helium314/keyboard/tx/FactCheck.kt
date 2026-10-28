@@ -477,10 +477,11 @@ object FactCheck {
             text = s
             setTextColor(color)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, sp)
-            if (bold) typeface = Typeface.DEFAULT_BOLD
+            typeface = if (bold) SovereignLook.semibold(ctx) else SovereignLook.regular(ctx)
         }
 
         private fun button(label: String, primary: Boolean, onClick: () -> Unit) = Button(ctx).apply {
+            typeface = SovereignLook.semibold(ctx)
             text = label
             isAllCaps = false
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)

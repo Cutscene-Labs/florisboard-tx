@@ -70,6 +70,7 @@ class SmartTakeActivity : Activity() {
             minimumWidth = dp(300)
         }
         setContentView(body)
+        SovereignLook.keepDressed(body)
         setFinishOnTouchOutside(true)
         scope.launch {
             image = withContext(Dispatchers.IO) { SovereignScreenshots.jpegForUpload(applicationContext, uri) }
@@ -209,7 +210,7 @@ class SmartTakeActivity : Activity() {
 
     private fun chip(s: String, onTap: () -> Unit) = text(s, 16f).apply {
         setPadding(dp(14), dp(11), dp(14), dp(11))
-        background = GradientDrawable().apply { cornerRadius = dp(12).toFloat(); setColor(Color.parseColor("#14D81B3C")) }
+        background = GradientDrawable().apply { cornerRadius = dp(12).toFloat(); setColor(SovereignLook.TINT) }
         setOnClickListener { onTap() }
     }
 
