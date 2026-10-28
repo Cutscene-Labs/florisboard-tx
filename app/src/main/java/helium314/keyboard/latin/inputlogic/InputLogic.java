@@ -1271,12 +1271,16 @@ public final class InputLogic {
 
         // SovereignBoard: auto-sparkle. A space after . ? ! : ; … or a dash ends a stretch worth
         // tidying; AiCleanup checks its own switch, the server settings and password fields.
-        if (Constants.CODE_SPACE == codePoint && !settingsValues.mIncognitoModeEnabled) {
-            final CharSequence lastTwo = mConnection.getTextBeforeCursor(2, 0);
-            if (lastTwo != null && lastTwo.length() == 2 && lastTwo.charAt(1) == Constants.CODE_SPACE
-                    && AiCleanup.isSegmentEnd(lastTwo.charAt(0))) {
-                AiCleanup.get(mLatinIME).cleanSentenceJustEnded(mLatinIME);
-            }
+        if (Constants.CODE_SPACE == codePoint) maybeAutoSparkle(settingsValues);
+    }
+
+    // SovereignBoard: auto-sparkle when the text now ends in ". " (or ? ! : ; … – —).
+    private void maybeAutoSparkle(final SettingsValues settingsValues) {
+        if (settingsValues.mIncognitoModeEnabled) return;
+        final CharSequence lastTwo = mConnection.getTextBeforeCursor(2, 0);
+        if (lastTwo != null && lastTwo.length() == 2 && lastTwo.charAt(1) == Constants.CODE_SPACE
+                && AiCleanup.isSegmentEnd(lastTwo.charAt(0))) {
+            AiCleanup.get(mLatinIME).cleanSentenceJustEnded(mLatinIME);
         }
     }
 
@@ -2318,6 +2322,9 @@ public final class InputLogic {
         ) {
             mConnection.commitCodePoint(Constants.CODE_SPACE);
             // todo: why not remove phantom space state?
+            // SovereignBoard: a swiped or typed word after . ? ! gets its space from here, not the
+            // space key, so auto-sparkle has to look here too.
+            maybeAutoSparkle(settingsValues);
         }
     }
 

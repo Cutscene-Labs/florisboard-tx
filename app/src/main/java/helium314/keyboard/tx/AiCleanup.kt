@@ -155,7 +155,7 @@ class AiCleanup private constructor(context: Context) {
             // Wait until the user is between words: swapping text while a word is still being
             // composed would put the cleaned text in the wrong place.
             var waited = 0L
-            while (ime.sovereignIsComposingWord() && waited < 8_000) {
+            while (ime.sovereignIsComposingWord() && waited < 30_000) {
                 delay(250)
                 waited += 250
             }
