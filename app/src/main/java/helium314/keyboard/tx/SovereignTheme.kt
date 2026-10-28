@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// SovereignBoard: the pink look from the FlorisBoard edition (floris_day.json + QuickActionButton.kt),
+// SovereignBoard: the cutscene.me look (was the pink look from the FlorisBoard edition),
 // stored as a HeliBoard user colour theme so it can still be changed in Settings > Appearance.
 package helium314.keyboard.tx
 
@@ -17,16 +17,18 @@ object SovereignTheme {
     /** Name of the user colour theme, as shown in the colours settings. */
     const val THEME_NAME = "SovereignBoard"
     private const val PREF_MIGRATED = "sovereign_pink_theme_v1"
+    private const val PREF_MIGRATED_CUTSCENE = "sovereign_cutscene_theme_v1"
     /** Tint of the pinned strip icons and the clipboard popup's icons; unset = follow the Enter colour. */
     private const val PREF_HOTKEY_COLOR = "sovereign_hotkey_color"
 
-    const val BACKGROUND = 0xFFEEF0F3.toInt() // Gboard-like light grey
-    const val KEYS = 0xFFFFFFFF.toInt() // white letter keys
-    const val FUNCTIONAL_KEYS = 0xFFF9DCE2.toInt() // light pink: shift, delete, ?123, emoji, ...
-    const val FUNCTIONAL_KEYS_PRESSED = 0xFFF2B8C3.toInt() // deeper pink (badge while recording / working)
-    const val ENTER = 0xFFD81B3C.toInt() // crown red; HeliBoard draws the action key in the accent colour
-    const val TEXT = 0xFF000000.toInt()
-    const val SUGGESTION_TEXT = 0xFF121212.toInt()
+    // The cutscene.me look (its style.css): grey page, white cards, blue as the one colour.
+    const val BACKGROUND = 0xFFEEF0F2.toInt() // cutscene --muted
+    const val KEYS = 0xFFFFFFFF.toInt() // white letter keys (--card)
+    const val FUNCTIONAL_KEYS = 0xFFE3EAFB.toInt() // light blue: shift, delete, ?123, emoji, ...
+    const val FUNCTIONAL_KEYS_PRESSED = 0xFFCEDBF7.toInt() // deeper blue (badge while recording / working)
+    const val ENTER = 0xFF3B6FE0.toInt() // cutscene --primary; HeliBoard draws the action key in the accent colour
+    const val TEXT = 0xFF121417.toInt() // cutscene --foreground
+    const val SUGGESTION_TEXT = 0xFF121417.toInt()
 
     private val colors = listOf(
         ColorSetting(KeyboardTheme.COLOR_ACCENT, false, ENTER),
@@ -42,7 +44,7 @@ object SovereignTheme {
     private fun colorsJson() = Json.encodeToString(colors)
 
     /**
-     * One-time change, for fresh and existing installs alike: create the pink user theme, make it the
+     * One-time change, for fresh and existing installs alike: create the user theme, make it the
      * day theme, and turn on key borders so letter keys show as white keys (the night theme is left alone).
      */
     fun migrate(prefs: SharedPreferences) {
@@ -53,6 +55,20 @@ object SovereignTheme {
             putString(Settings.PREF_THEME_COLORS, THEME_NAME)
             putBoolean(Settings.PREF_THEME_KEY_BORDERS, true)
             putBoolean(PREF_MIGRATED, true)
+        }
+    }
+
+    /**
+     * One-time change to the cutscene.me colours (his call, 28 Oct 2026): rewrites the SovereignBoard theme,
+     * makes it the day theme again, and lets the hotkey icons follow the new blue Enter key.
+     */
+    fun migrateToCutscene(prefs: SharedPreferences) {
+        if (prefs.getBoolean(PREF_MIGRATED_CUTSCENE, false)) return
+        prefs.edit {
+            putString(Settings.PREF_USER_COLORS_PREFIX + THEME_NAME, colorsJson())
+            putString(Settings.PREF_THEME_COLORS, THEME_NAME)
+            remove(PREF_HOTKEY_COLOR)
+            putBoolean(PREF_MIGRATED_CUTSCENE, true)
         }
     }
 

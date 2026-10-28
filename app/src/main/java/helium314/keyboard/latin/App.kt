@@ -50,6 +50,7 @@ class App : Application() {
         SovereignToolbar.migrateToolbarNoClipboard(prefs()) // SovereignBoard: clipboard only pinned in the strip, not in the toolbar, once
         SovereignToolbar.migrateSparkleBeforeMic(prefs()) // SovereignBoard: pinned keys clipboard, ✨, mic (mic at the edge) once
         SovereignTheme.migrate(prefs()) // SovereignBoard: pink day theme once
+        SovereignTheme.migrateToCutscene(prefs()) // SovereignBoard: cutscene.me colours once
         SovereignToolbar.migrateEmojiKey(prefs()) // SovereignBoard: emoji key on the bottom row once
         SovereignToolbar.migrateFactCheckKey(prefs()) // SovereignBoard: pin the fact-check key between ✨ and mic once
         SovereignToolbar.migrateUnpinFactCheck(prefs()) // SovereignBoard: fact check moved into the clipboard bubble; unpin it once
