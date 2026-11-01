@@ -147,12 +147,11 @@ fun PrivacyScreen(onClickBack: () -> Unit) {
                 )
                 LeavesItem(
                     "✨ cleanup",
-                    "The text goes to Claude to be tidied. Names are hidden first.",
+                    "The text goes to Claude to be tidied, over an encrypted line. Nothing is kept.",
                 )
                 LeavesItem(
                     "Fact check",
-                    "The text goes to Claude, which searches the web. Names are NOT hidden, so don't " +
-                        "use it on client details.",
+                    "The text goes to Claude, which searches the web for it.",
                 )
                 LeavesItem(
                     "Your typing",
