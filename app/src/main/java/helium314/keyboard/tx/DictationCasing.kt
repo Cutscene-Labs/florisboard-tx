@@ -59,12 +59,40 @@ object DictationCasing {
      * The server's cleanup, tidied for how he actually dictates (his note, 16 Nov 2026):
      * - a full stop after a word no sentence ends on ("to", "of", "and", "I'm") was a pause, not an
      *   end: the stop goes and the next word loses its capital ([mend]);
+     * - the full stops left between phrases become semicolons, his default (17 Nov 2026: "Yes, instead
+     *   of stops"), the next word lower-cased ([semicolons]); ? and ! stay;
      * - the full stop at the very end goes; he rarely wants it ([dropFinalFullStop]);
      * - "Ai", "Adhd": known acronyms get their capitals back ([restoreAcronyms]);
      * - ",," and the like collapse to one mark.
      */
     fun polish(text: String, knownWords: Collection<String>): String =
-        restoreAcronyms(dropFinalFullStop(mend(DOUBLED_MARK.replace(text, "$1"), knownWords)), knownWords)
+        restoreAcronyms(dropFinalFullStop(semicolons(mend(DOUBLED_MARK.replace(text, "$1"), knownWords), knownWords)), knownWords)
+
+    /** "one phrase. The next" → "one phrase; the next". Abbreviations ("Dr."), initials and numbers keep their stop. */
+    fun semicolons(text: String, knownWords: Collection<String>): String {
+        var out = text
+        var from = 0
+        while (true) {
+            val m = STOP_BETWEEN_WORDS.find(out, from) ?: break
+            val word = m.groupValues[1]
+            val gap = m.groupValues[2]
+            if (!isPhraseEnd(word)) {
+                from = m.range.last + 1
+                continue
+            }
+            val rest = lowerFirst(out.substring(m.range.last + 1), knownWords)
+            out = out.substring(0, m.range.first) + word + ";" + gap + rest
+            from = m.range.first + word.length + 1 + gap.length
+        }
+        return out
+    }
+
+    private fun isPhraseEnd(rawWord: String): Boolean {
+        val w = rawWord.trimEnd { !it.isLetterOrDigit() }.trimStart { !it.isLetterOrDigit() }
+        if (w.isEmpty() || w.contains('.')) return false // "U.S.", "e.g."
+        if (w.length == 1 || w.all { it.isDigit() }) return false // an initial, "3."
+        return w.lowercase() !in ABBREVIATIONS
+    }
 
     private val DOUBLED_MARK = Regex("""([,;:!?])\1+""")
 

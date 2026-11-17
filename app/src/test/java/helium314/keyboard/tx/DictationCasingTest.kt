@@ -28,12 +28,19 @@ class DictationCasingTest {
             DictationCasing.polish("Periods after prepositions and. The words that follow them. ", none))
     }
 
-    @Test fun realSentenceEndsStay() {
-        assertEquals("I know that. The rest can wait ",
+    @Test fun realSentenceEndsBecomeSemicolons() {
+        assertEquals("I know that; the rest can wait ",
             DictationCasing.polish("I know that. The rest can wait. ", none))
-        assertEquals("That is what it's about. The rest can wait ",
+        assertEquals("That is what it's about; the rest can wait ",
             DictationCasing.polish("That is what it's about. The rest can wait. ", none))
-        assertEquals("Done (for now). Next week ", DictationCasing.polish("Done (for now). Next week. ", none))
+        assertEquals("Done (for now); next week ", DictationCasing.polish("Done (for now). Next week. ", none))
+        assertEquals("Ask Erin; I think she knows ", DictationCasing.polish("Ask Erin. I think she knows. ", none))
+    }
+
+    @Test fun questionsAbbreviationsAndNumbersKeepTheirMark() {
+        assertEquals("Is it done? Then send it ", DictationCasing.polish("Is it done? Then send it. ", none))
+        assertEquals("Ask Dr. Smith about the U.S. Rules ", DictationCasing.polish("Ask Dr. Smith about the U.S. Rules. ", none))
+        assertEquals("Chapter 3. Then the end ", DictationCasing.polish("Chapter 3. Then the end. ", none))
     }
 
     @Test fun contractionsAndINeverEndASentence() {
