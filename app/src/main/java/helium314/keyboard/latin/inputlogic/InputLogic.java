@@ -1633,21 +1633,27 @@ public final class InputLogic {
         }
         // We only do this when we see one space and an accepted code point before the cursor.
         // The code point may be a surrogate pair but the space may not, so we need 3 chars.
-        final CharSequence lastTwo = mConnection.getTextBeforeCursor(3, 0);
+        // SovereignBoard: a dictation ends with its own space, so the first tap makes two spaces
+        // and the second tap lands here with "word  " before the cursor. Accept that too, so two
+        // taps after a dictation give "word. " just like two taps after a typed word. (17 Nov 2026)
+        final CharSequence lastTwo = mConnection.getTextBeforeCursor(4, 0);
         if (null == lastTwo) return false;
         final int length = lastTwo.length();
         if (length < 2) return false;
         if (lastTwo.charAt(length - 1) != Constants.CODE_SPACE) {
             return false;
         }
-        // We know there is a space in pos -1, and we have at least two chars. If we have only two
-        // chars, isSurrogatePairs can't return true as charAt(1) is a space, so this is fine.
-        final int firstCodePoint = Character.isSurrogatePair(lastTwo.charAt(0), lastTwo.charAt(1))
-                        ? Character.codePointAt(lastTwo, length - 3)
-                        : lastTwo.charAt(length - 2);
+        final int spaces = (length >= 3 && lastTwo.charAt(length - 2) == Constants.CODE_SPACE) ? 2 : 1;
+        if (length < spaces + 1) return false;
+        // We know there are `spaces` spaces at the end, and at least one char before them.
+        final int wordEnd = length - spaces; // index just after the word's last char
+        final int firstCodePoint = wordEnd >= 2
+                        && Character.isSurrogatePair(lastTwo.charAt(wordEnd - 2), lastTwo.charAt(wordEnd - 1))
+                        ? Character.codePointAt(lastTwo, wordEnd - 2)
+                        : lastTwo.charAt(wordEnd - 1);
         if (canBeFollowedByDoubleSpacePeriod(firstCodePoint)) {
             cancelDoubleSpacePeriodCountdown();
-            mConnection.deleteTextBeforeCursor(1);
+            mConnection.deleteTextBeforeCursor(spaces);
             final String textToInsert = inputTransaction.getSettingsValues().mSpacingAndPunctuations
                     .mSentenceSeparatorAndSpace;
             mConnection.commitText(textToInsert, 1);
