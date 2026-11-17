@@ -227,7 +227,7 @@ fun SovereignScreen(onClickBack: () -> Unit) {
                 OutlinedButton(
                     onClick = {
                         ctx.startActivity(Intent(Intent.ACTION_VIEW,
-                            Uri.parse("https://dictate.limn.dev/app/whatsnew-h.html"))
+                            Uri.parse(SovereignVersion.WHATS_NEW_URL))
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                     },
                     modifier = Modifier.fillMaxWidth(),

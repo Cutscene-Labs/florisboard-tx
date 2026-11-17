@@ -17,7 +17,7 @@ import org.json.JSONArray
  */
 object SovereignVersion {
     const val HELP_URL = "https://dictate.limn.dev/app/help-h.html"
-    const val WHATS_NEW_URL = "https://dictate.limn.dev/app/whatsnew-h.html"
+    const val WHATS_NEW_URL = "https://cutscene.me/keyboard/whatsnew.html"
     const val SOURCE_URL = "https://github.com/jc-hackett/florisboard-tx/tree/heliboard"
 
     private const val PREF_BUILD = "sovereign_version_build"
