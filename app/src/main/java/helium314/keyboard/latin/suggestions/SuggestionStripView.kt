@@ -87,7 +87,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         fun removeExternalSuggestions()
         fun onSwipeDownOnToolbar()
         fun sovereignAddWordToDictionary(word: String) // SovereignBoard: the "+" button
-        fun sovereignCommitEmoji(emoji: String) // SovereignBoard: the emoji slot
     }
 
     private val moreSuggestionsContainer: View
@@ -167,9 +166,11 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         contentDescription = resources.getString(R.string.spoken_empty_suggestion)
         isEnabled = false
         setOnClickListener {
-            val emoji = tag as? String ?: return@setOnClickListener
+            // Picked like any other suggestion: the emoji takes the place of the word that brought it up
+            // (typing "heart" and tapping ❤️ used to leave "heart ❤️").
+            val info = tag as? SuggestedWordInfo ?: return@setOnClickListener
             AudioAndHapticFeedbackManager.getInstance().performHapticAndAudioFeedback(KeyCode.NOT_SPECIFIED, this, HapticEvent.KEY_PRESS)
-            listener.sovereignCommitEmoji(emoji)
+            listener.pickSuggestionManually(info)
         }
         setOnLongClickListener {
             AudioAndHapticFeedbackManager.getInstance().performHapticFeedback(this, HapticEvent.KEY_LONG_PRESS)

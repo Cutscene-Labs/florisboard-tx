@@ -626,7 +626,8 @@ final class SuggestionStripLayoutHelper {
         setupSovereignWord(context, wordB, suggestedWords, indexB, false);
         final String emoji = emojiIndex >= 0 ? suggestedWords.getWord(emojiIndex) : null;
         mSovereignEmojiView.setText(emoji);
-        mSovereignEmojiView.setTag(emoji);
+        // the whole suggestion, so a tap goes through the normal pick and replaces the word being typed
+        mSovereignEmojiView.setTag(emojiIndex >= 0 ? suggestedWords.getInfo(emojiIndex) : null);
         mSovereignEmojiView.setContentDescription(emoji != null ? emoji
                 : context.getResources().getString(R.string.spoken_empty_suggestion));
         mSovereignEmojiView.setEnabled(emoji != null

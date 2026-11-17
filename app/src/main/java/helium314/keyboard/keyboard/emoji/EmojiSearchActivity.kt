@@ -138,6 +138,8 @@ class EmojiSearchActivity : ComponentActivity() {
     @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // SovereignBoard: a fresh search each time (the last search used to be waiting in the box)
+        searchText = ""
         init()
         enableEdgeToEdge()
         setContent {

@@ -143,7 +143,9 @@ class DictationManager(private val ime: InputMethodService) {
                         // Fit it to what is before the cursor: lower-case start mid-sentence, a space
                         // between it and the previous word (read again now; the cursor may have moved).
                         val before = textBeforeCursor()
-                        val text = DictationCasing.fit(heard, before, knownWords())
+                        // No full stop at the end, none after "to" / "of" / "and", "AI" not "Ai" (polish),
+                        // then fitted to what is before the cursor.
+                        val text = DictationCasing.fit(DictationCasing.polish(heard, knownWords()), before, knownWords())
                         // Where the text goes, read before the edit (many editors still report the
                         // old cursor right after one; see UndoSlot).
                         val at = SovereignUndo.snapshot(ic)?.let { minOf(it.selStart, it.selEnd) }

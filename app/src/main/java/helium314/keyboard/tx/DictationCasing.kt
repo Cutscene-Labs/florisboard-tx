@@ -55,6 +55,88 @@ object DictationCasing {
         return t
     }
 
+    /**
+     * The server's cleanup, tidied for how he actually dictates (his note, 16 Nov 2026):
+     * - a full stop after a word no sentence ends on ("to", "of", "and", "I'm") was a pause, not an
+     *   end: the stop goes and the next word loses its capital ([mend]);
+     * - the full stop at the very end goes; he rarely wants it ([dropFinalFullStop]);
+     * - "Ai", "Adhd": known acronyms get their capitals back ([restoreAcronyms]);
+     * - ",," and the like collapse to one mark.
+     */
+    fun polish(text: String, knownWords: Collection<String>): String =
+        restoreAcronyms(dropFinalFullStop(mend(DOUBLED_MARK.replace(text, "$1"), knownWords)), knownWords)
+
+    private val DOUBLED_MARK = Regex("""([,;:!?])\1+""")
+
+    /** "word." followed by whitespace and more text. */
+    private val STOP_BETWEEN_WORDS = Regex("""(\S+)\.(\s+)(?=\S)""")
+
+    /** Words a sentence does not end on: a full stop after one of them is a mis-heard pause. */
+    private val NOT_SENTENCE_ENDERS = setOf(
+        "of", "to", "in", "on", "at", "for", "with", "from", "into", "onto", "than", "as", "via", "per",
+        "toward", "towards", "against", "among", "between", "during", "despite", "except", "until", "upon",
+        "the", "a", "an", "and", "or", "but", "nor", "because", "whether", "unless", "although",
+        "my", "your", "his", "our", "their", "its",
+    )
+    private val CONTRACTION_TAILS = listOf("'m", "'re", "'ve", "'ll", "'d", "’m", "’re", "’ve", "’ll", "’d")
+
+    /** Removes a full stop after a word no sentence ends on, lower-casing the word after it. */
+    fun mend(text: String, knownWords: Collection<String>): String {
+        var out = text
+        var from = 0
+        while (true) {
+            val m = STOP_BETWEEN_WORDS.find(out, from) ?: break
+            val word = m.groupValues[1]
+            val gap = m.groupValues[2]
+            if (!cannotEndSentence(word)) {
+                from = m.range.last + 1
+                continue
+            }
+            val rest = lowerFirst(out.substring(m.range.last + 1), knownWords)
+            out = out.substring(0, m.range.first) + word + gap + rest
+            from = m.range.first + word.length + gap.length
+        }
+        return out
+    }
+
+    private fun cannotEndSentence(rawWord: String): Boolean {
+        val w = rawWord.trimStart { !it.isLetter() }
+        if (w.isEmpty() || !w.last().isLetter()) return false // ends in ) or ": a real end
+        if (w == "I") return true
+        val lower = w.lowercase()
+        return lower in NOT_SENTENCE_ENDERS || CONTRACTION_TAILS.any { lower.endsWith(it) }
+    }
+
+    private val ABBREVIATIONS = setOf("etc", "vs", "dr", "mr", "mrs", "ms", "st", "jr", "sr")
+
+    /** Removes a single full stop at the very end (whitespace after it kept); ? ! … and abbreviations stay. */
+    fun dropFinalFullStop(text: String): String {
+        val end = text.indexOfLast { !it.isWhitespace() }
+        if (end < 0 || text[end] != '.') return text
+        if (end > 0 && !text[end - 1].isLetterOrDigit()) return text // "..", ")." and such: leave alone
+        val wordStart = text.lastIndexOfAny(charArrayOf(' ', '\n', '\t'), end) + 1
+        val word = text.substring(wordStart, end)
+        if (word.length == 1 || word.contains('.') || word.lowercase() in ABBREVIATIONS) return text
+        return text.removeRange(end, end + 1)
+    }
+
+    /** Short forms the cleanup tends to write as a name ("Ai"); plus any ALL-CAPS entry in the user's own words. */
+    private val ACRONYMS = setOf(
+        "AI", "ADHD", "PTSD", "OCD", "CBT", "DBT", "EMDR", "LCSW", "NHS", "EU", "UK", "USA", "API", "URL",
+        "PDF", "PIN", "VPN", "SMS", "GPS", "LLM", "CEO", "HR", "FAQ", "ASAP", "FYI", "IRS", "LLC", "APK", "TV",
+    )
+    private val WORD = Regex("""\p{L}+""")
+
+    /** "Ai" → "AI", "Adhd" → "ADHD": only a capitalised-then-lower-case spelling of a known acronym is touched. */
+    fun restoreAcronyms(text: String, knownWords: Collection<String>): String {
+        val known = ACRONYMS + knownWords.map { it.trim() }
+            .filter { it.length >= 2 && it.all { c -> c.isLetter() } && it.all { c -> c.isUpperCase() } }
+        return WORD.replace(text) { m ->
+            val w = m.value
+            if (w.length >= 2 && w[0].isUpperCase() && w.drop(1).all { it.isLowerCase() } && w.uppercase() in known) w.uppercase() else w
+        }
+    }
+
     private fun lowerFirst(text: String, knownWords: Collection<String>): String {
         val start = text.indexOfFirst { !it.isWhitespace() }
         if (start < 0) return text
