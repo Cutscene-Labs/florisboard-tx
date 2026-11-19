@@ -201,6 +201,8 @@ class ServerTranscriber(context: Context) : Transcriber {
             val keepId = reply.optString("keep_id").takeIf { keep && KEEP_ID.matches(it) }
             // What was heard before the server's cleanup, so ✨ can offer to put it back.
             val raw = reply.optString("raw").trim().takeIf { it.isNotEmpty() && it != text }
+            // The words came, but the cleanup did not: the Anthropic account is out of credit.
+            if (reply.optString("problem") == "no_credit") SovereignAlerts.outOfCredit(appContext)
             return if (text.isEmpty()) null else Transcript("$text ", keepId, raw?.let { "$it " })
         } catch (e: DictationException) {
             throw e

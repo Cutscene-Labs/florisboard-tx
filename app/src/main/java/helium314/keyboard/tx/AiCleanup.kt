@@ -212,6 +212,10 @@ class AiCleanup private constructor(context: Context) {
                     SovereignToken.onRejected(appContext)
                     error("the server didn't accept your access token.")
                 }
+                402 -> {
+                    SovereignAlerts.outOfCredit(appContext)
+                    error("the AI is out of credit. Top up the Anthropic account.")
+                }
                 413 -> error("that's too long (about 300 words at most). Select a part and tap again.")
                 429 -> error(
                     if (serverReason(conn).contains("daily")) "you've reached today's limit. It resets tomorrow."

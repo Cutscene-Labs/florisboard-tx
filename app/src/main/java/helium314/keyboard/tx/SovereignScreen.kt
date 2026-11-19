@@ -6,6 +6,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
@@ -107,6 +108,11 @@ fun SovereignScreen(onClickBack: () -> Unit) {
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         SovereignToken.refreshMic(ctx)
         if (!granted && !hasMic(ctx)) openAppSettings(ctx)
+    }
+    // Android 13+: the out-of-credit alert (SovereignAlerts) needs leave to notify; ask once when the screen opens.
+    val notifyLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= 33 && !SovereignAlerts.canNotify(ctx)) notifyLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     // Keyboard updates (same flow as the FlorisBoard edition's AppUpdater)
