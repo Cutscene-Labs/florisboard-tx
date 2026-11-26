@@ -31,9 +31,23 @@ class ClipboardAdapter(
     var itemTextColor = 0
     var itemTextSize = 0f
 
+    // SovereignBoard: only the pinned clips while the pin in the toolbar is on (his ask, 26 Nov 2026)
+    var pinnedOnly = false
+        set(value) { field = value; filtered = null; notifyDataSetChanged() }
+    private var filtered: List<ClipboardHistoryEntry>? = null
+    private fun pinnedList(): List<ClipboardHistoryEntry> = filtered ?: run {
+        val m = clipboardHistoryManager
+        val all = if (m == null) emptyList() else (0 until m.getHistorySize()).mapNotNull { m.getHistoryEntry(it) }
+        all.filter { it.isPinned }.also { filtered = it }
+    }
+    fun refilter() { filtered = null }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.clipboard_entry_key, parent, false)
+        // SovereignBoard: each clip is a slide, most of the width, so the next one shows at the edge (his ask, 26 Nov 2026)
+        val w = if (parent.width > 0) parent.width else helium314.keyboard.latin.utils.ResourceUtils.getKeyboardWidth(parent.context, Settings.getValues())
+        view.layoutParams = RecyclerView.LayoutParams((w * 0.84f).toInt().coerceAtLeast(1), ViewGroup.LayoutParams.MATCH_PARENT)
         return ViewHolder(view)
     }
 
@@ -41,9 +55,9 @@ class ClipboardAdapter(
         holder.setContent(getItem(position))
     }
 
-    private fun getItem(position: Int) = clipboardHistoryManager?.getHistoryEntry(position)
+    private fun getItem(position: Int) = if (pinnedOnly) pinnedList().getOrNull(position) else clipboardHistoryManager?.getHistoryEntry(position)
 
-    override fun getItemCount() = clipboardHistoryManager?.getHistorySize() ?: 0
+    override fun getItemCount() = if (pinnedOnly) pinnedList().size else clipboardHistoryManager?.getHistorySize() ?: 0
 
     inner class ViewHolder(
             view: View
@@ -104,6 +118,7 @@ class ClipboardAdapter(
 
         override fun onLongClick(view: View): Boolean {
             clipboardHistoryManager?.toggleClipPinned(view.tag as Long)
+            if (pinnedOnly) { filtered = null; notifyDataSetChanged() }
             return true
         }
     }

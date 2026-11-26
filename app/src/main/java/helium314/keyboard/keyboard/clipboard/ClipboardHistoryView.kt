@@ -12,7 +12,8 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
 import helium314.keyboard.event.HapticEvent
 import helium314.keyboard.keyboard.KeyboardActionListener
 import helium314.keyboard.keyboard.KeyboardElement
@@ -70,6 +71,17 @@ class ClipboardHistoryView @JvmOverloads constructor(
         val keyboardViewAttr = context.obtainStyledAttributes(attrs, R.styleable.KeyboardView, defStyle, R.style.KeyboardView)
         keyBackgroundId = keyboardViewAttr.getResourceId(R.styleable.KeyboardView_keyBackground, 0)
         keyboardViewAttr.recycle()
+        // SovereignBoard: the plain toolbar once for anyone still on the old default (his ask, 26 Nov 2026)
+        context.prefs().let { p ->
+            if (!p.getBoolean("sb_clip_toolbar_plain", false)) {
+                val now = p.getString(Settings.PREF_CLIPBOARD_TOOLBAR_KEYS, null)
+                p.edit().apply {
+                    if (now == null || now == helium314.keyboard.latin.utils.oldClipboardToolbarPref)
+                        putString(Settings.PREF_CLIPBOARD_TOOLBAR_KEYS, helium314.keyboard.latin.utils.defaultClipboardToolbarPref)
+                    putBoolean("sb_clip_toolbar_plain", true)
+                }.apply()
+            }
+        }
         getEnabledClipboardToolbarKeys(context.prefs())
             .forEach { toolbarKeys.add(createToolbarKey(context, it)) }
         fitsSystemWindows = true
@@ -94,14 +106,25 @@ class ClipboardHistoryView @JvmOverloads constructor(
         }
         placeholderView = findViewById(R.id.clipboard_empty_view)
         clipboardRecyclerView = findViewById<ClipboardHistoryRecyclerView>(R.id.clipboard_list).apply {
-            val colCount = resources.getInteger(R.integer.config_clipboard_keyboard_col_count)
-            layoutManager = StaggeredGridLayoutManager(colCount, StaggeredGridLayoutManager.VERTICAL)
+            // SovereignBoard: clips side by side, flipped through one at a time like slides (his ask, 26 Nov 2026)
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            PagerSnapHelper().attachToRecyclerView(this)
             @Suppress("deprecation") // "no cache" should be fine according to warning in https://developer.android.com/reference/android/view/ViewGroup#setPersistentDrawingCache(int)
             persistentDrawingCache = PERSISTENT_NO_CACHE
             clipboardLayoutParams.setListProperties(this)
             placeholderView = this@ClipboardHistoryView.placeholderView
         }
         val clipboardStrip = KeyboardSwitcher.getInstance().clipboardStrip
+        // SovereignBoard: a pin first in the strip shows only the pinned clips, and all again (his ask, 26 Nov 2026)
+        ImageButton(context).apply {
+            setImageResource(pinIconId)
+            contentDescription = "Pinned clips only"
+            layoutParams = LayoutParams(resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width), LayoutParams.MATCH_PARENT)
+            colors.setColor(this, ColorType.TOOL_BAR_KEY)
+            colors.setBackground(this, ColorType.STRIP_BACKGROUND)
+            setOnClickListener { isActivated = !isActivated; clipboardAdapter.pinnedOnly = isActivated; clipboardRecyclerView.scrollToPosition(0) }
+            clipboardStrip.addView(this)
+        }
         toolbarKeys.forEach {
             clipboardStrip.addView(it)
             it.setOnClickListener(this@ClipboardHistoryView)
@@ -231,15 +254,18 @@ class ClipboardHistoryView @JvmOverloads constructor(
     }
 
     override fun onClipInserted(position: Int) {
+        if (clipboardAdapter.pinnedOnly) { clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged(); return }
         clipboardAdapter.notifyItemInserted(position)
         clipboardRecyclerView.smoothScrollToPosition(position)
     }
 
     override fun onClipsRemoved(position: Int, count: Int) {
+        if (clipboardAdapter.pinnedOnly) { clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged(); return }
         clipboardAdapter.notifyItemRangeRemoved(position, count)
     }
 
     override fun onClipMoved(oldPosition: Int, newPosition: Int) {
+        if (clipboardAdapter.pinnedOnly) { clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged(); return }
         clipboardAdapter.notifyItemMoved(oldPosition, newPosition)
         clipboardAdapter.notifyItemChanged(newPosition)
         if (newPosition < oldPosition) clipboardRecyclerView.smoothScrollToPosition(newPosition)

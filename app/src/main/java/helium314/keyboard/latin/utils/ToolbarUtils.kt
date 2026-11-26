@@ -150,8 +150,15 @@ private val sovereignPinned = listOf(CLIPBOARD, AI_CLEANUP, VOICE)
 val defaultPinnedToolbarPref = (sovereignPinned + entries.filterNot { it == CLOSE_HISTORY || it in sovereignPinned })
     .joinToString(Separators.ENTRY) { it.name + Separators.KV + (it in sovereignPinned) }
 
-val defaultClipboardToolbarPref by lazy {
+// SovereignBoard: a plain clipboard toolbar (his ask, 26 Nov 2026: "I almost never touch those buttons"): clear and close
+val oldClipboardToolbarPref by lazy {
     val default = listOf(CLEAR_CLIPBOARD, UP, DOWN, LEFT, RIGHT, UNDO, CUT, COPY, PASTE, SELECT_WORD, CLOSE_HISTORY)
+    val others = entries.filterNot { it in default }
+    default.joinToString(Separators.ENTRY) { it.name + Separators.KV + true } + Separators.ENTRY +
+            others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }
+}
+val defaultClipboardToolbarPref by lazy {
+    val default = listOf(CLEAR_CLIPBOARD, CLOSE_HISTORY)
     val others = entries.filterNot { it in default }
     default.joinToString(Separators.ENTRY) { it.name + Separators.KV + true } + Separators.ENTRY +
             others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }
