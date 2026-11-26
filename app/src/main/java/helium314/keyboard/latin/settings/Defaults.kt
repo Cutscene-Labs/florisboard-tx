@@ -182,7 +182,7 @@ object Defaults {
     const val PREF_AUTO_HIDE_TOOLBAR = false
     val PREF_CLIPBOARD_TOOLBAR_KEYS = defaultClipboardToolbarPref
     const val PREF_ABC_AFTER_EMOJI = false
-    const val PREF_ABC_AFTER_CLIP = false
+    const val PREF_ABC_AFTER_CLIP = true   // SovereignBoard: back to the letters after a clipboard paste (his ask, 26 Nov 2026)
     const val PREF_ABC_AFTER_SYMBOL_SPACE = true
     const val PREF_ABC_AFTER_NUMPAD_SPACE = false
     const val PREF_REMOVE_REDUNDANT_POPUPS = false
