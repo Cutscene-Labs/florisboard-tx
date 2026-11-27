@@ -13,7 +13,6 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.PagerSnapHelper
 import helium314.keyboard.event.HapticEvent
 import helium314.keyboard.keyboard.KeyboardActionListener
 import helium314.keyboard.keyboard.KeyboardElement
@@ -107,8 +106,7 @@ class ClipboardHistoryView @JvmOverloads constructor(
         placeholderView = findViewById(R.id.clipboard_empty_view)
         clipboardRecyclerView = findViewById<ClipboardHistoryRecyclerView>(R.id.clipboard_list).apply {
             // SovereignBoard: clips side by side, flipped through one at a time like slides (his ask, 26 Nov 2026)
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            PagerSnapHelper().attachToRecyclerView(this)
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)   // two to a screen, scrolled freely (27 Nov 2026)
             @Suppress("deprecation") // "no cache" should be fine according to warning in https://developer.android.com/reference/android/view/ViewGroup#setPersistentDrawingCache(int)
             persistentDrawingCache = PERSISTENT_NO_CACHE
             clipboardLayoutParams.setListProperties(this)
@@ -151,6 +149,7 @@ class ClipboardHistoryView @JvmOverloads constructor(
 
     private fun setupBottomRowKeyboard(editorInfo: EditorInfo, listener: KeyboardActionListener) {
         val keyboardView = findViewById<MainKeyboardView>(R.id.bottom_row_keyboard)
+        keyboardView.visibility = View.GONE   // SovereignBoard: no ABC or space bar under the clips (his ask, 27 Nov 2026); × in the bar goes back
         keyboardView.setKeyboardActionListener(listener)
         PointerTracker.switchTo(keyboardView)
         val kls = KeyboardLayoutSet.Builder.buildEmojiClipBottomRow(context, editorInfo)

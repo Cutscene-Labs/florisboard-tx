@@ -46,9 +46,9 @@ class ClipboardAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.clipboard_entry_key, parent, false)
-        // SovereignBoard: each clip is a slide, most of the width, so the next one shows at the edge (his ask, 26 Nov 2026)
+        // SovereignBoard: clips side by side, two to a screen (his asks, 26 and 27 Nov 2026)
         val w = if (parent.width > 0) parent.width else helium314.keyboard.latin.utils.ResourceUtils.getKeyboardWidth(parent.context, Settings.getValues())
-        view.layoutParams = RecyclerView.LayoutParams((w * 0.84f).toInt().coerceAtLeast(1), ViewGroup.LayoutParams.MATCH_PARENT)
+        view.layoutParams = RecyclerView.LayoutParams((w * 0.485f).toInt().coerceAtLeast(1), ViewGroup.LayoutParams.MATCH_PARENT)
         return ViewHolder(view)
     }
 
