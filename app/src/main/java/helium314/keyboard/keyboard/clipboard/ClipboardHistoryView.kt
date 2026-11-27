@@ -118,7 +118,7 @@ class ClipboardHistoryView @JvmOverloads constructor(
         // SovereignBoard: a pin first in the strip shows only the pinned clips, and all again (his ask, 26 Nov 2026)
         ImageButton(context).apply {
             setImageResource(pinIconId)
-            contentDescription = "Pinned clips only"
+            contentDescription = "Show the pinned clips"
             layoutParams = LayoutParams(resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width), LayoutParams.MATCH_PARENT)
             colors.setColor(this, ColorType.TOOL_BAR_KEY)
             colors.setBackground(this, ColorType.STRIP_BACKGROUND)
@@ -253,22 +253,18 @@ class ClipboardHistoryView @JvmOverloads constructor(
             keyboardActionListener.onCodeInput(KeyCode.ALPHA, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false)
     }
 
+    // SovereignBoard: the list is always filtered (the pinned clips kept apart), so any change redraws it
     override fun onClipInserted(position: Int) {
-        if (clipboardAdapter.pinnedOnly) { clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged(); return }
-        clipboardAdapter.notifyItemInserted(position)
-        clipboardRecyclerView.smoothScrollToPosition(position)
+        clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged()
+        clipboardRecyclerView.scrollToPosition(0)
     }
 
     override fun onClipsRemoved(position: Int, count: Int) {
-        if (clipboardAdapter.pinnedOnly) { clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged(); return }
-        clipboardAdapter.notifyItemRangeRemoved(position, count)
+        clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged()
     }
 
     override fun onClipMoved(oldPosition: Int, newPosition: Int) {
-        if (clipboardAdapter.pinnedOnly) { clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged(); return }
-        clipboardAdapter.notifyItemMoved(oldPosition, newPosition)
-        clipboardAdapter.notifyItemChanged(newPosition)
-        if (newPosition < oldPosition) clipboardRecyclerView.smoothScrollToPosition(newPosition)
+        clipboardAdapter.refilter(); clipboardAdapter.notifyDataSetChanged()
     }
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {

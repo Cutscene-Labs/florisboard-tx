@@ -31,14 +31,15 @@ class ClipboardAdapter(
     var itemTextColor = 0
     var itemTextSize = 0f
 
-    // SovereignBoard: only the pinned clips while the pin in the toolbar is on (his ask, 26 Nov 2026)
+    // SovereignBoard: the pinned clips are kept apart (his asks, 26 and 27 Nov 2026): the clipboard shows the others; the pin
+    // in the toolbar switches to the pinned ones only, and back
     var pinnedOnly = false
         set(value) { field = value; filtered = null; notifyDataSetChanged() }
     private var filtered: List<ClipboardHistoryEntry>? = null
     private fun pinnedList(): List<ClipboardHistoryEntry> = filtered ?: run {
         val m = clipboardHistoryManager
         val all = if (m == null) emptyList() else (0 until m.getHistorySize()).mapNotNull { m.getHistoryEntry(it) }
-        all.filter { it.isPinned }.also { filtered = it }
+        all.filter { it.isPinned == pinnedOnly }.also { filtered = it }
     }
     fun refilter() { filtered = null }
 
@@ -55,9 +56,9 @@ class ClipboardAdapter(
         holder.setContent(getItem(position))
     }
 
-    private fun getItem(position: Int) = if (pinnedOnly) pinnedList().getOrNull(position) else clipboardHistoryManager?.getHistoryEntry(position)
+    private fun getItem(position: Int) = pinnedList().getOrNull(position)
 
-    override fun getItemCount() = if (pinnedOnly) pinnedList().size else clipboardHistoryManager?.getHistorySize() ?: 0
+    override fun getItemCount() = pinnedList().size
 
     inner class ViewHolder(
             view: View
@@ -118,7 +119,7 @@ class ClipboardAdapter(
 
         override fun onLongClick(view: View): Boolean {
             clipboardHistoryManager?.toggleClipPinned(view.tag as Long)
-            if (pinnedOnly) { filtered = null; notifyDataSetChanged() }
+            filtered = null; notifyDataSetChanged()   // a pinned clip moves to the pinned side
             return true
         }
     }
