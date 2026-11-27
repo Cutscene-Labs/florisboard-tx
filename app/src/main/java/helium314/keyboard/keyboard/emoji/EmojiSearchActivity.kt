@@ -144,7 +144,8 @@ class EmojiSearchActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LocalContext.current.setTheme(KeyboardTheme.getKeyboardTheme(this).mStyleId)
-            Surface(modifier = Modifier.fillMaxSize(), color = Color(0x80000000)) {
+            // SovereignBoard: no dark veil over the screen while the search opens (his report, 27 Nov 2026: a flash before it)
+            Surface(modifier = Modifier.fillMaxSize(), color = Color.Transparent) {
                 var heightDp by remember { mutableStateOf(0.dp) }
                 Column(modifier = Modifier.fillMaxSize().clickable(onClick = { cancel() })
                     .windowInsetsPadding(WindowInsets.safeDrawing.exclude(WindowInsets(bottom = heightDp))),
@@ -204,7 +205,7 @@ class EmojiSearchActivity : ComponentActivity() {
                         ) {
                             BasicTextField(
                                 value = text,
-                                modifier = Modifier.fillMaxWidth().heightIn(20.dp, 30.dp).focusRequester(focusRequester),
+                                modifier = Modifier.fillMaxWidth().heightIn(44.dp, 52.dp).focusRequester(focusRequester),   // SovereignBoard: a taller box (27 Nov 2026)
                                 textStyle = TextStyle(fontFamily = fontFamily, textDirection = TextDirection.Content, color = textFieldColors.unfocusedTextColor),
                                 onValueChange = {
                                     text = it
