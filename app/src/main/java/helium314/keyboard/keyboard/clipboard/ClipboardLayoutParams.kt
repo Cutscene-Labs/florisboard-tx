@@ -38,7 +38,7 @@ class ClipboardLayoutParams(ctx: Context) {
         // height calculation is not good enough, probably also because keyboard top padding might be off by a pixel (see KeyboardParser)
         val offset = 1.25f * res.displayMetrics.density * sv.mKeyboardHeightScale
         // SovereignBoard: no bottom row (ABC, space) in the clipboard, so the clips take its place too (his ask, 27 Nov 2026)
-        listHeight = defaultKeyboardHeight - bottomPadding + offset.toInt()
+        listHeight = defaultKeyboardHeight + offset.toInt()   // and the bottom padding too: no grey band under the clips
     }
 
     fun setListProperties(recycler: RecyclerView) {
