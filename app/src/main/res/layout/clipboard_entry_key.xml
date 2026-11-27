@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:adjustViewBounds="true"
-            android:maxHeight="190dp"
+            android:maxHeight="200dp"
             android:scaleType="fitCenter"
             android:visibility="gone"/>
         <TextView
