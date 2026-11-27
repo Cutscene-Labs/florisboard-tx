@@ -97,11 +97,6 @@ class ClipboardAdapter(
             itemView.tag = historyEntry.id
             if (historyEntry.filename != null) {
                 historyEntry.setImageAndDescription(contentImageView, contentTextView)
-                // SovereignBoard: a tall picture (a screenshot) lies on its side, so all of it fits the wide slide (his ask, 27 Nov 2026)
-                (contentImageView.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap?.let { b ->
-                    if (b.height > b.width) contentImageView.setImageBitmap(android.graphics.Bitmap.createBitmap(b, 0, 0, b.width, b.height,
-                        android.graphics.Matrix().apply { postRotate(-90f) }, true))
-                }
             } else {
                 contentTextView.text = historyEntry.text?.take(1000) // truncate displayed text for performance reasons
             }

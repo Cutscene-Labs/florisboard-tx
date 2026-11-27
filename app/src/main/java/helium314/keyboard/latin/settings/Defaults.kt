@@ -88,7 +88,8 @@ object Defaults {
     @JvmField
     val PREF_SPLIT_SPACER_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     @JvmField
-    val PREF_KEYBOARD_HEIGHT_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
+    // SovereignBoard: a little taller when upright, so the clipboard's pictures have room (his ask, 27 Nov 2026)
+    val PREF_KEYBOARD_HEIGHT_SCALE = Array(4) { if (it and 1 == 0) 1.1f else DEFAULT_SIZE_SCALE }
     @JvmField
     val PREF_BOTTOM_ROW_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     @JvmField

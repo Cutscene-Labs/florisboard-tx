@@ -120,7 +120,8 @@ class AiCleanup private constructor(context: Context) {
      * was, with the cursor kept where the user has got to.
      */
     fun cleanSentenceJustEnded(ime: LatinIME) {
-        val settings = DictationSettings(appContext)
+        return   // SovereignBoard: auto-sparkle is gone (his call, 27 Nov 2026: "Kill auto sparkle feature"); the ✨ key still tidies on demand
+        @Suppress("UNREACHABLE_CODE") val settings = DictationSettings(appContext)
         if (!settings.autoCleanupOnPeriod) return
         if (isPassword(ime)) return
         if (settings.serverUrl.isBlank() || settings.token.isBlank()) return

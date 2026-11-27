@@ -364,21 +364,7 @@ fun SovereignScreen(onClickBack: () -> Unit) {
                 Text(clipCheck, style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = { clipCheck = ClipboardCheck.summary(ctx) }) { Text("Refresh") }
 
-                Text("AI cleanup", style = MaterialTheme.typography.titleMedium)
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Auto-sparkle", style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            "After a space following . ? ! : ; … or a dash, tidy the paragraph you just finished. " +
-                                "The ✨ key in the toolbar tidies a selection or the whole box on demand.",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                    Switch(
-                        checked = autoSparkle,
-                        onCheckedChange = { autoSparkle = it; settings.autoCleanupOnPeriod = it },
-                    )
-                }
+                // SovereignBoard: the Auto-sparkle switch left with the feature (his call, 27 Nov 2026)
 
                 Text("Clipboard key", style = MaterialTheme.typography.titleMedium)
                 Text(
