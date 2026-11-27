@@ -225,9 +225,17 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
             setupKey(button, colors)
             toolbar.addView(button)
         }
-        for (pinnedKey in getPinnedToolbarKeys(context.prefs())) {
+        // SovereignBoard: the pinned keys on the Cutscene home's icon grid (his ask, 27 Nov 2026: "button proportions and
+        //  alignment need to match the above"): each as wide as a home icon tile (49.6dp), 8dp apart, the last 4dp from the
+        //  screen's right edge (the strip's own 6dp is taken back), so each icon stands under a tile's middle
+        val dp = resources.displayMetrics.density
+        val pinnedList = getPinnedToolbarKeys(context.prefs())
+        for ((pinnedIndex, pinnedKey) in pinnedList.withIndex()) {
             val button = createToolbarKey(context, pinnedKey)
-            button.layoutParams = toolbarKeyLayoutParams
+            button.layoutParams = LinearLayout.LayoutParams((49.6f * dp).toInt(), LinearLayout.LayoutParams.MATCH_PARENT).apply {
+                if (pinnedIndex > 0) marginStart = (8 * dp).toInt()
+                if (pinnedIndex == pinnedList.lastIndex) marginEnd = (-2 * dp).toInt()
+            }
             setupKey(button, colors)
             pinnedKeys.addView(button)
             if (pinnedKey == ToolbarKey.CLIPBOARD) attachClipboardSwipe(button) // SovereignBoard:
