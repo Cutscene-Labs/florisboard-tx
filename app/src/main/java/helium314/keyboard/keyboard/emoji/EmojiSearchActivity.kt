@@ -356,8 +356,11 @@ class EmojiSearchActivity : ComponentActivity() {
         keyboard.removeAllKeys()
         firstKey = null
         pressedKey = null
-        dictionaryFacilitator!!.getSuggestions(text.splitOnWhitespace()).filter { it.isEmoji }.forEach {
-            val emoji = getEmojiDefaultVersion(it.word)
+        // SovereignBoard: nothing typed yet, the ten most recent emoji (his ask, 27 Nov 2026)
+        val found = if (text.isBlank()) RecentEmojis.get().take(10)
+            else dictionaryFacilitator!!.getSuggestions(text.splitOnWhitespace()).filter { it.isEmoji }.map { it.word }
+        found.forEach {
+            val emoji = getEmojiDefaultVersion(it)
             val popupSpec = getEmojiPopupSpec(emoji)
             val keyParams = Key.KeyParams(emoji, emoji.getCode(), if (popupSpec != null) EMOJI_HINT_LABEL else null, popupSpec,
                 Key.LABEL_FLAGS_FONT_NORMAL, keyboardParams)

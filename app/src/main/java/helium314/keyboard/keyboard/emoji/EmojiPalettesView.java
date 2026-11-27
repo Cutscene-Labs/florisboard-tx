@@ -359,6 +359,9 @@ public final class EmojiPalettesView extends LinearLayout
         setLayerType(LAYER_TYPE_HARDWARE, null);
     }
 
+    /** SovereignBoard: set when the emoji search hands back to this board, so the search does not open again at once. */
+    public static boolean sSkipAutoSearch = false;
+
     public void startEmojiPalettes(final KeyVisualAttributes keyVisualAttr,
                final EditorInfo editorInfo, final KeyboardActionListener keyboardActionListener) {
         initialize();
@@ -370,6 +373,11 @@ public final class EmojiPalettesView extends LinearLayout
         mEmojiCategory.reloadRecents(); // in case recents changed from outside emoji keyboards
         setupSidePadding();
         initDictionaryFacilitator();
+        // SovereignBoard: the emoji search opens at once (his ask, 27 Nov 2026), showing the recent ones until he types
+        // (not when coming back from the search itself, or it would open again and again)
+        if (sSkipAutoSearch) sSkipAutoSearch = false;
+        else if (!helium314.keyboard.latin.utils.DictionaryInfoUtils.getLocalesWithEmojiDicts(getContext()).isEmpty())
+            post(() -> keyboardActionListener.onCodeInput(KeyCode.EMOJI_SEARCH, NOT_A_COORDINATE, NOT_A_COORDINATE, false));
     }
 
     private void addRecentKey(Key key) {

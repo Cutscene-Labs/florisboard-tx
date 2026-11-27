@@ -101,6 +101,8 @@ class ClipboardAdapter(
                 contentTextView.text = historyEntry.text?.take(1000) // truncate displayed text for performance reasons
             }
             // SovereignBoard: a picture sits straight on the keyboard's grey, no white card behind it (his ask, 27 Nov 2026)
+            // a text clip's card is only as tall as its words; a picture takes the full height (his ask, 27 Nov 2026)
+            itemView.layoutParams = itemView.layoutParams.apply { height = if (historyEntry.filename != null) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT }
             if (historyEntry.filename != null) itemView.background = null
             else { itemView.setBackgroundResource(itemBackgroundId); Settings.getValues().mColors.setBackground(itemView, ColorType.KEY_BACKGROUND) }
             pinnedIconView.visibility = if (historyEntry.isPinned) View.VISIBLE else View.GONE
