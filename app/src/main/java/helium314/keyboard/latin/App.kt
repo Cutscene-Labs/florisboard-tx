@@ -54,6 +54,7 @@ class App : Application() {
         SovereignToolbar.migrateEmojiKey(prefs()) // SovereignBoard: emoji key on the bottom row once
         SovereignToolbar.migrateFactCheckKey(prefs()) // SovereignBoard: pin the fact-check key between ✨ and mic once
         SovereignToolbar.migrateUnpinFactCheck(prefs()) // SovereignBoard: fact check moved into the clipboard bubble; unpin it once
+        SovereignToolbar.migrateLifeRaftKey(prefs()) // SovereignBoard: pin the life raft key just before clipboard history once
         if (BuildConfig.DEBUG) // do this on every debug apk start because we may work on adding a new toolbar key
             upgradeToolbarPrefs(prefs())
         transferOldPinnedClips(this) // todo: remove in a few months, maybe end 2026

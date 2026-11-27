@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SovereignBoard: the life raft toolbar key (types the last dictation in again): a life ring with
+    four solid bands on its diagonals.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFF"
+        android:strokeWidth="1.8"
+        android:pathData="M12,3.5a8.5,8.5 0,1 1,0 17a8.5,8.5 0,1 1,0 -17z"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFF"
+        android:strokeWidth="1.8"
+        android:pathData="M12,7.8a4.2,4.2 0,1 1,0 8.4a4.2,4.2 0,1 1,0 -8.4z"/>
+    <path
+        android:fillColor="#FFF"
+        android:pathData="M19.51,15.99 A8.5,8.5 0 0,1 15.99,19.51 L13.97,15.71 A4.2,4.2 0 0,0 15.71,13.97 Z M8.01,19.51 A8.5,8.5 0 0,1 4.49,15.99 L8.29,13.97 A4.2,4.2 0 0,0 10.03,15.71 Z M4.49,8.01 A8.5,8.5 0 0,1 8.01,4.49 L10.03,8.29 A4.2,4.2 0 0,0 8.29,10.03 Z M15.99,4.49 A8.5,8.5 0 0,1 19.51,8.01 L15.71,10.03 A4.2,4.2 0 0,0 13.97,8.29 Z"/>
+</vector>

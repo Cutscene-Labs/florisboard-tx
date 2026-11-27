@@ -127,6 +127,11 @@ class DictationManager(private val ime: InputMethodService) {
                 return@launch
             }
             hardStop.cancel()
+            // Kept for the life raft key before anything is typed, so a dictation that never lands
+            // (no field, field changed, dropped below) can still be recovered (see LastDictation).
+            result?.text?.takeIf { it.isNotBlank() }?.let { heardText ->
+                LastDictation.save(appContext, runCatching { DictationCasing.polish(heardText, knownWords()) }.getOrDefault(heardText))
+            }
             if (_state.value != DictationState.RECORDING && _state.value != DictationState.WORKING) {
                 // Aborted while we were working; drop the result rather than typing it into
                 // whatever the user moved on to.

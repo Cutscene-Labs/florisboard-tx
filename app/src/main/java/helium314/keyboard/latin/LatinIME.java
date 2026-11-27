@@ -97,6 +97,7 @@ import helium314.keyboard.tx.AiCleanup; // SovereignBoard:
 import helium314.keyboard.tx.DictationManager; // SovereignBoard:
 import helium314.keyboard.tx.EditorSnapshot; // SovereignBoard:
 import helium314.keyboard.tx.FactCheck; // SovereignBoard:
+import helium314.keyboard.tx.LastDictation; // SovereignBoard:
 import helium314.keyboard.tx.SovereignAddWord; // SovereignBoard:
 import helium314.keyboard.tx.SovereignToken; // SovereignBoard:
 import helium314.keyboard.tx.SovereignScreenshots; // SovereignBoard:
@@ -1456,6 +1457,17 @@ public class LatinIME extends InputMethodService implements
     public void sovereignFactCheck() {
         mInputLogic.commitTyped(mSettings.getCurrent(), LastComposedWord.NOT_A_SEPARATOR);
         FactCheck.INSTANCE.open(this);
+    }
+
+    // SovereignBoard: the life raft toolbar key. Finish the word being typed, then type the last
+    // dictation in again at the cursor (like a paste, it withdraws the ✨ / dictation undo).
+    public void sovereignRecoverDictation() {
+        mInputLogic.commitTyped(mSettings.getCurrent(), LastComposedWord.NOT_A_SEPARATOR);
+        SovereignUndo.INSTANCE.onUserInput();
+        LastDictation.INSTANCE.recover(this);
+        final InputConnection ic = getCurrentInputConnection();
+        final EditorSnapshot now = ic == null ? null : SovereignUndo.INSTANCE.snapshot(ic);
+        if (now != null) sovereignReloadAfterExternalEdit(now.getSelStart(), now.getSelEnd());
     }
 
     // SovereignBoard: show / hide the fact-check panel in place of the keys.

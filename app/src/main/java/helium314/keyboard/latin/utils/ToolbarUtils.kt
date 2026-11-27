@@ -97,6 +97,7 @@ fun getCodeForToolbarKey(key: ToolbarKey) = Settings.getInstance().getCustomTool
     BACKGROUND_GATHERING -> KeyCode.BACKGROUND_GATHERING
     AI_CLEANUP -> KeyCode.AI_CLEANUP // SovereignBoard:
     FACT_CHECK -> KeyCode.FACT_CHECK // SovereignBoard:
+    LIFE_RAFT -> KeyCode.LIFE_RAFT // SovereignBoard:
 }
 
 fun getCodeForToolbarKeyLongClick(key: ToolbarKey) = Settings.getInstance().getCustomToolbarLongpressCode(key) ?: when (key) {
@@ -126,6 +127,7 @@ enum class ToolbarKey {
     PAGE_UP, PAGE_DOWN, FULL_LEFT, FULL_RIGHT, PAGE_START, PAGE_END, BACKGROUND_GATHERING,
     AI_CLEANUP, // SovereignBoard: the ✨ key
     FACT_CHECK, // SovereignBoard: the fact-check (magnifier) key
+    LIFE_RAFT, // SovereignBoard: the life raft key, types the last dictation in again
 }
 
 enum class ToolbarMode {
@@ -144,9 +146,9 @@ val defaultToolbarPref by lazy {
             others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }
 }
 
-// SovereignBoard: clipboard history, ✨, then the mic (at the far right edge) pinned in the suggestion strip,
-//  next to the word suggestions (fact check lives in the clipboard key's bubble)
-private val sovereignPinned = listOf(CLIPBOARD, AI_CLEANUP, VOICE)
+// SovereignBoard: the life raft (last dictation), clipboard history, ✨, then the mic (at the far right edge)
+//  pinned in the suggestion strip, next to the word suggestions (fact check lives in the clipboard key's bubble)
+private val sovereignPinned = listOf(LIFE_RAFT, CLIPBOARD, AI_CLEANUP, VOICE)
 val defaultPinnedToolbarPref = (sovereignPinned + entries.filterNot { it == CLOSE_HISTORY || it in sovereignPinned })
     .joinToString(Separators.ENTRY) { it.name + Separators.KV + (it in sovereignPinned) }
 

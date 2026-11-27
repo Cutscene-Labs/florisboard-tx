@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// SovereignBoard: toolbar helpers for the ✨ key and the mic key's recording dot.
+// SovereignBoard: toolbar helpers for the ✨ key, the mic key's recording dot and the life raft key.
 package helium314.keyboard.tx
 
 import android.content.SharedPreferences
@@ -50,6 +50,7 @@ object SovereignToolbar {
     private const val PREF_SPARKLE_BEFORE_MIC_MIGRATED = "sovereign_pinned_sparkle_before_mic_v1"
     private const val PREF_FACT_CHECK_MIGRATED = "sovereign_pinned_fact_check_v1"
     private const val PREF_FACT_CHECK_UNPINNED = "sovereign_pinned_no_fact_check_v1"
+    private const val PREF_LIFE_RAFT_MIGRATED = "sovereign_pinned_life_raft_v1"
     /** The strip's own background for each key, put back when ✨ leaves its undo state. */
     private val plainBackground = WeakHashMap<ImageButton, Drawable?>()
 
@@ -123,6 +124,13 @@ object SovereignToolbar {
                         // the grey "waiting for the server" dot breathes; the green recording dot stays steady
                         decorate(button, ToolbarKey.VOICE, micDot, tint, pulse = look.mic == DictationState.WORKING)
                         drawn[button] = micLook
+                    }
+                    ToolbarKey.LIFE_RAFT -> {
+                        // a plain icon in the same tint as its clipboard neighbour
+                        val raftLook = Pair("raft", tint)
+                        if (!force && drawn[button] == raftLook) continue
+                        decorate(button, ToolbarKey.LIFE_RAFT, null, tint)
+                        drawn[button] = raftLook
                     }
                     ToolbarKey.FACT_CHECK -> {
                         val factLook = Triple("fact", look.checking, tint)
@@ -251,6 +259,27 @@ object SovereignToolbar {
                 putString(Settings.PREF_PINNED_TOOLBAR_KEYS, entries.joinToString(Separators.ENTRY))
             }
             putBoolean(PREF_FACT_CHECK_UNPINNED, true)
+        }
+    }
+
+    /**
+     * One-time change, for existing installs: pin the life raft key (types the last dictation in again)
+     * in the strip right before clipboard history (life raft, clipboard, ✨, mic).
+     * Fresh installs get this from the default pinned list.
+     */
+    fun migrateLifeRaftKey(prefs: SharedPreferences) {
+        if (prefs.getBoolean(PREF_LIFE_RAFT_MIGRATED, false)) return
+        prefs.edit {
+            prefs.getString(Settings.PREF_PINNED_TOOLBAR_KEYS, null)?.let { saved ->
+                val entries = saved.split(Separators.ENTRY).filter { it.isNotEmpty() }.toMutableList()
+                val ours = ToolbarKey.LIFE_RAFT.name + Separators.KV
+                entries.removeAll { it.startsWith(ours) }
+                val clip = entries.indexOfFirst { it.startsWith(ToolbarKey.CLIPBOARD.name + Separators.KV) && it.endsWith("true") }
+                val firstOn = entries.indexOfFirst { it.endsWith("true") }
+                entries.add(if (clip >= 0) clip else if (firstOn >= 0) firstOn else 0, ours + "true")
+                putString(Settings.PREF_PINNED_TOOLBAR_KEYS, entries.joinToString(Separators.ENTRY))
+            }
+            putBoolean(PREF_LIFE_RAFT_MIGRATED, true)
         }
     }
 

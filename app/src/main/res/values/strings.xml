@@ -356,6 +356,8 @@
     <string name="ai_cleanup" tools:keep="@string/ai_cleanup" translatable="false">AI cleanup</string>
     <!-- SovereignBoard: the fact-check toolbar key -->
     <string name="fact_check" tools:keep="@string/fact_check" translatable="false">Fact check</string>
+    <!-- SovereignBoard: the life raft toolbar key -->
+    <string name="life_raft" tools:keep="@string/life_raft" translatable="false">Recover last dictation</string>
     <string name="numpad" tools:keep="@string/numpad" translatable="false">@string/layout_numpad</string>
     <string name="dpad" tools:keep="@string/dpad" translatable="false">@string/layout_dpad</string>
     <string name="settings" tools:keep="@string/settings">Settings</string>
